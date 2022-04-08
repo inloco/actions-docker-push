@@ -1,1 +1,1 @@
-# actions-docker-push
+# Docker Push Action
