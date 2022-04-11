@@ -1,0 +1,15 @@
+name: Docker Push
+description: Tags Docker Images and Pushes them to ECR
+inputs:
+  image-repos:
+    description: Image Repositories
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Set Kustomization Image Tags
+      run: |
+        export IMAGE_REPOS="${{ inputs.image-repos }}"
+        export IMAGE_TAG="$(make -Bsf ${{ github.action_path }}/Makefile image-tag)"
+        make -Bf ${{ github.action_path }}/Makefile docker-push
+      shell: bash
