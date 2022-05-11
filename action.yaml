@@ -4,6 +4,9 @@ inputs:
   image-repos:
     description: Image Repositories
     required: true
+  image-suffixes:
+    description: Image Suffixes
+    required: false
   image-tag:
     description: Custom Image Tag
     required: false
