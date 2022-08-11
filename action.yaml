@@ -12,8 +12,14 @@ runs:
   using: composite
   steps:
     - name: Set Kustomization Image Tags
+      shell: bash
       run: |
         export IMAGE_REPOS="${{ inputs.image-repos }}"
-        export IMAGE_TAG="$(make -Bsf ${{ github.action_path }}/Makefile IMAGE_TAG="${{ inputs.image-tag }}" image-tag)"
-        make -Bf ${{ github.action_path }}/Makefile docker-push
-      shell: bash
+        export IMAGE_TAG_INPUT="${{ inputs.image-tag }}"
+        export IMAGE_TAG=$(test "${IMAGE_TAG_INPUT}" = 'commit-sha' && git describe --always --dirty --exclude '*' || printf "%s" "${IMAGE_TAG_INPUT}")
+        export IMAGE_REGISTRY="${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+
+        for IMAGE_REPO in ${IMAGE_REPOS}
+        do
+            echo "skopeo 'docker-daemon:${IMAGE_REPO}' 'docker://${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}'"
+        done | parallel --lb -k
