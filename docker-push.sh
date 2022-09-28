@@ -17,10 +17,10 @@ for IMAGE in ${IMAGES}
 do
     split_image ${IMAGE}
     echo "docker tag '${IMAGE}' '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
-done #| parallel --lb
+done | parallel --lb
 
 for IMAGE in ${IMAGES} 
 do
     split_image ${IMAGE}
     echo "docker push '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
-done #| parallel --lb
+done | parallel --lb

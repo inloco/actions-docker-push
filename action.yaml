@@ -7,7 +7,7 @@ inputs:
   image-repos:
     description: Image Repositories
     required: false
-    deprecationMessage: This input is deprecated. Use "images" instead
+    deprecationMessage: This input is deprecated, use "images" as input instead.
   image-tag:
     description: Custom Image Tag
     required: false
