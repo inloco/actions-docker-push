@@ -11,7 +11,7 @@ split_image() {
     fi
 }
 
-IMAGE_REGISTRY={AWS_ACCOUNT}.dkr.ecr.{AWS_REGION}.amazonaws.com
+IMAGE_REGISTRY=${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
 for IMAGE in ${IMAGES}
 do
