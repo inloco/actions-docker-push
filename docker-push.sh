@@ -2,14 +2,25 @@
 
 set -e
 
-IMAGE_REGISTRY=${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+split_image() {
+    export IMAGE_REPO="$(sed -En 's/([^:]*).*/\1/p' <<< ${1})"
+    export IMAGE_TAG_SUFFIX="$(sed -En 's/.*:(.*)/\1/p' <<< ${1})"
+    if [[ ! -z "${IMAGE_TAG_SUFFIX}" ]]
+    then
+        export IMAGE_TAG_SUFFIX="-${IMAGE_TAG_SUFFIX}"
+    fi
+}
 
-for IMAGE_REPO in ${IMAGE_REPOS}
-do
-    echo "docker tag '${IMAGE_REPO}' '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}'"
-done | parallel --lb
+IMAGE_REGISTRY={AWS_ACCOUNT}.dkr.ecr.{AWS_REGION}.amazonaws.com
 
-for IMAGE_REPO in ${IMAGE_REPOS}
+for IMAGE in ${IMAGES}
 do
-    echo "docker push '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}'"
-done | parallel --lb
+    split_image ${IMAGE}
+    echo "docker tag '${IMAGE}' '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
+done #| parallel --lb
+
+for IMAGE in ${IMAGES} 
+do
+    split_image ${IMAGE}
+    echo "docker push '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
+done #| parallel --lb

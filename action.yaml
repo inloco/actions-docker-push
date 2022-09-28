@@ -1,9 +1,13 @@
 name: Docker Push
 description: Tags Docker Images and Pushes them to ECR
 inputs:
+  images:
+    description: Images to be pushed. Image tags will be used as suffix
+    required: false
   image-repos:
     description: Image Repositories
-    required: true
+    required: false
+    deprecationMessage: This input is deprecated. Use "images" instead
   image-tag:
     description: Custom Image Tag
     required: false
@@ -12,8 +16,17 @@ runs:
   using: composite
   steps:
     - name: Set Kustomization Image Tags
-      run: |
-        export IMAGE_REPOS="${{ inputs.image-repos }}"
-        export IMAGE_TAG="$(make -Bsf ${{ github.action_path }}/Makefile IMAGE_TAG="${{ inputs.image-tag }}" image-tag)"
-        make -Bf ${{ github.action_path }}/Makefile docker-push
       shell: bash
+      run: |
+        export IMAGE_TAG="$(make -Bsf ${{ github.action_path }}/Makefile IMAGE_TAG="${{ inputs.image-tag }}" image-tag)"
+        export IMAGES="${{ inputs.images }}"
+        export IMAGE_REPOS="${{ inputs.image-repos }}"
+        if [[ ! -z "${IMAGES}" ]] && [[ ! -z "${IMAGE_REPOS}" ]]
+        then
+          echo '"images" and "image-repos" inputs are not allowed simultaneously. "image-repos" is deprecated. Use "images" instead'
+        elif [[ -z "${IMAGES}" ]]
+        then
+          export IMAGES="${IMAGE_REPOS}"
+        fi
+
+        make -Bf ${{ github.action_path }}/Makefile docker-push
