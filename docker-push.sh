@@ -12,15 +12,15 @@ split_image() {
 }
 
 IMAGE_REGISTRY=${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+DOCKER_TAG_COMMANDS=`mktemp`
+DOCKER_PUSH_COMMANDS=`mktemp`
 
 for IMAGE in ${IMAGES}
 do
     split_image ${IMAGE}
-    echo "docker tag '${IMAGE}' '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
-done | parallel --lb
+    echo "docker tag '${IMAGE}' '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'" | tee -a ${DOCKER_TAG_COMMANDS}
+    echo "docker push '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'" | tee -a ${DOCKER_PUSH_COMMANDS}
+done
 
-for IMAGE in ${IMAGES} 
-do
-    split_image ${IMAGE}
-    echo "docker push '${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}${IMAGE_TAG_SUFFIX}'"
-done | parallel --lb
+cat ${DOCKER_TAG_COMMANDS} | parallel --lb
+cat ${DOCKER_PUSH_COMMANDS} | parallel --lb
